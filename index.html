@@ -17,65 +17,36 @@
       background-color: #fefefe;
       color: #333;
       text-align: center;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
     h1, h2, h3 {
       margin: 0.5em 0;
     }
-    p {
-      margin: 0.5em;
-    }
     button {
-      border: none;
+      font-size: 1.2em;
+      padding: 0.6em 1em;
+      margin: 0.3em;
       cursor: pointer;
+      border: none;
       border-radius: 8px;
+      background-color: #dcdcdc;
       transition: background-color 0.2s ease;
     }
     button:hover {
       background-color: #ccc;
     }
-
+    .big-button {
+      font-size: 1.4em;
+      padding: 0.8em 2em;
+    }
     /********************************************
-     * トップページ
+     * 画面レイアウト
     ********************************************/
-    .top-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 1em;
-    }
-    /* 設定フォーム */
-    .setting-area {
-      margin: 1em auto;
-      border: 1px solid #ddd;
-      padding: 1em;
-      border-radius: 8px;
-      max-width: 600px;
-      background-color: #fafafa;
-    }
-    .setting-item {
-      margin: 0.5em 0;
-    }
-    label {
-      margin-right: 0.5em;
-    }
-
-    /* ボタンのカード風デザイン */
-    .card-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #dcdcdc;
-      width: 220px;
-      height: 80px;
-      margin: 0.5em;
-      font-size: 1.2em;
-    }
-
-    /********************************************
-     * 画面切り替え
-    ********************************************/
+    /* 画面切り替え用の共通スタイル */
     .screen {
       display: none;
+      width: 100%;
       max-width: 800px;
       margin: 0 auto;
       padding: 1em;
@@ -83,55 +54,43 @@
     .active {
       display: block;
     }
-
-    /********************************************
-     * ルール説明画面
-    ********************************************/
-    .rule-container {
-      margin: 1em auto;
-    }
-
-    /********************************************
-     * ゲーム画面
-    ********************************************/
-    #game-header {
+    /* メインメニューのコンテナ */
+    .menu-container {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
-      margin-bottom: 0.5em;
+      justify-content: center;
+      min-height: 80vh;
     }
-    #countdown {
-      font-size: 2em;
+    /* 設定項目 */
+    .setting-item {
       margin: 1em 0;
-      min-height: 2em;
     }
+    label {
+      margin-right: 0.5em;
+    }
+
+    /********************************************
+     * ゲーム画面用
+    ********************************************/
     #circle-container {
       position: relative;
       width: 80%;
       height: 300px;
-      margin: 0.5em auto;
+      margin: 1em auto;
       border: 1px solid #ccc;
       background-color: #fff;
       overflow: hidden;
-    }
-    #question-prompt {
-      font-size: 1.4em;
-      font-weight: bold;
-      margin: 0.5em 0;
-      min-height: 1.6em;
     }
     .circle {
       position: absolute;
       border-radius: 50%;
     }
-    #choice-container {
-      margin: 1em 0;
-    }
     .choice-button {
       display: inline-block;
       font-size: 1.5em;
       margin: 0.5em;
-      padding: 0.4em 1em;
+      padding: 0.5em 1em;
       border: 2px solid #aaa;
       border-radius: 8px;
       background-color: #dcdcdc;
@@ -141,21 +100,11 @@
       font-size: 1.3em;
       color: #d33;
       min-height: 1.5em;
-    }
-    .help-buttons {
-      margin: 1em 0;
+      margin: 0.5em;
     }
 
     /********************************************
-     * 結果画面
-    ********************************************/
-    #screen-result p {
-      margin: 0.8em;
-      font-size: 1.2em;
-    }
-
-    /********************************************
-     * アニメーション用
+     * アニメーション用クラス
     ********************************************/
     /* 正解時: 軽くスケールアップ */
     .correct-animate {
@@ -183,86 +132,64 @@
 </head>
 <body>
 
-<!-- トップページ -->
+<!-- スタート画面 -->
 <div id="screen-start" class="screen active">
-  <div class="top-container">
+  <div class="menu-container">
     <h1>かぞえんぼ</h1>
-
-    <!-- 設定フォーム (トップページに表示) -->
-    <div class="setting-area">
-      <h3>設定</h3>
-      <div class="setting-item">
-        <label for="difficultySelect">難易度</label>
-        <select id="difficultySelect" onchange="onDifficultyChange()">
-          <option value="初級">初級 (2～5個、2秒表示)</option>
-          <option value="中級">中級 (5～8個、1秒表示)</option>
-          <option value="上級">上級 (8～10個、0.5秒表示)</option>
-        </select>
-      </div>
-      <div class="setting-item">
-        <label for="displayTimeSelect">表示時間</label>
-        <select id="displayTimeSelect">
-          <option value="0.5">0.5秒</option>
-          <option value="1">1秒</option>
-          <option value="2">2秒</option>
-        </select>
-      </div>
-      <div class="setting-item">
-        <label for="soundOnOff">サウンド</label>
-        <select id="soundOnOff">
-          <option value="on">ON</option>
-          <option value="off">OFF</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- ボタンカード -->
-    <div>
-      <button class="card-button" onclick="startGame()">ゲームスタート</button>
-      <button class="card-button" onclick="showScreen('screen-rule')">ルール説明</button>
-    </div>
+    <button class="big-button" onclick="startGame()">ゲームスタート</button>
+    <button class="big-button" onclick="showScreen('screen-rule')">ルール説明</button>
+    <button class="big-button" onclick="showScreen('screen-setting')">設定</button>
   </div>
 </div>
 
 <!-- ルール説明画面 -->
 <div id="screen-rule" class="screen">
   <h2>ルール説明</h2>
-  <div class="rule-container">
-    <p>
-      表示される丸の数を覚えて、次に表示される選択肢から正しい数を当てるゲームです。<br>
-      1セット5問で構成され、5問終了後に結果が表示されます。<br>
-      途中でやめる場合は「トップページへ戻る」ボタンでいつでも戻れます。
-    </p>
-    <p>設定はトップページにあるので、好きなタイミングで変更可能です。</p>
+  <p>画面に表示される丸の数を覚えて、次の画面で正しい数を当てるゲームです。<br>
+    1セット5問で構成され、5問が終わると結果画面が表示されます。<br>
+    表示時間や難易度、サウンドの設定は「設定」画面から変更できます。</p>
+  <button onclick="showScreen('screen-start')">戻る</button>
+</div>
+
+<!-- 設定画面 -->
+<div id="screen-setting" class="screen">
+  <h2>設定</h2>
+
+  <div class="setting-item">
+    <label for="difficultySelect">難易度</label>
+    <select id="difficultySelect" onchange="onDifficultyChange()">
+      <option value="初級">初級 (2～5個・2秒表示)</option>
+      <option value="中級">中級 (5～8個・1秒表示)</option>
+      <option value="上級">上級 (8～10個・0.5秒表示)</option>
+    </select>
   </div>
-  <button onclick="showScreen('screen-start')">トップページへ戻る</button>
+
+  <div class="setting-item">
+    <label for="displayTimeSelect">表示時間</label>
+    <select id="displayTimeSelect">
+      <option value="0.5">0.5秒</option>
+      <option value="1">1秒</option>
+      <option value="2">2秒</option>
+    </select>
+  </div>
+
+  <div class="setting-item">
+    <label for="soundOnOff">サウンド</label>
+    <select id="soundOnOff">
+      <option value="on">ON</option>
+      <option value="off">OFF</option>
+    </select>
+  </div>
+
+  <button onclick="applySettings()">OK</button>
+  <button onclick="showScreen('screen-start')">戻る</button>
 </div>
 
 <!-- ゲーム画面 -->
 <div id="screen-game" class="screen">
-  <div id="game-header">
-    <h2>問題 <span id="questionNumber">1</span> / 5</h2>
-    <button onclick="showScreen('screen-start')" style="background-color: #f2bcb2;">
-      トップページへ戻る
-    </button>
-  </div>
-
-  <!-- カウントダウン表示 -->
-  <div id="countdown"></div>
-
-  <!-- 丸表示領域 -->
-  <div id="circle-container">
-    <!-- 丸を消したあとは「いくつあった？」を表示 -->
-    <div id="question-prompt"></div>
-  </div>
-
-  <!-- 選択肢 -->
+  <h2>問題 <span id="questionNumber">1</span> / 5</h2>
+  <div id="circle-container"></div>
   <div id="choice-container"></div>
-
-  <!-- ヘルプボタンやフィードバック表示 -->
-  <div class="help-buttons">
-    <button id="retryBtn" onclick="helpReShowCircles()" style="background-color: #f6f189;">もういちど</button>
-  </div>
   <p id="feedback"></p>
 </div>
 
@@ -272,7 +199,7 @@
   <p><span id="resultMessage"></span></p>
   <p id="resultSubMessage"></p>
   <button onclick="startGame()">再挑戦</button>
-  <button onclick="showScreen('screen-start')">トップページへ戻る</button>
+  <button onclick="showScreen('screen-start')">タイトルへ</button>
 </div>
 
 <script>
@@ -280,6 +207,7 @@
    * グローバル変数
   ********************************************/
   const TOTAL_QUESTIONS = 5; // 1セットあたりの問題数
+
   let currentQuestion = 0;   // 現在何問目か（1〜5）
   let correctCount = 0;      // 正解数
 
@@ -289,10 +217,6 @@
   let circleMax = 5;             // 丸の最大数 (初級:5)
   let displayTime = 2.0;         // 初期値: 2秒
   let soundEnabled = true;       // サウンドON/OFF
-
-  // 丸の再表示用
-  let currentCircleData = [];    // 今の問題の丸データ
-  let currentCircleCount = 0;    // 今の問題で出た丸の数
 
   // 難易度別マップ
   const difficultyMap = {
@@ -316,32 +240,10 @@
    * ゲーム開始
   ********************************************/
   function startGame() {
-    applySettings(); // 念のため最新設定を反映
     currentQuestion = 0;
     correctCount = 0;
     showScreen("screen-game");
     nextQuestion();
-  }
-
-  /********************************************
-   * 設定項目の変更反映
-  ********************************************/
-  function onDifficultyChange() {
-    // 難易度を変更したら表示時間も初期値に設定
-    const newDiff = document.getElementById("difficultySelect").value;
-    const suggestedTime = difficultyMap[newDiff].time;
-    document.getElementById("displayTimeSelect").value = suggestedTime.toString();
-  }
-
-  function applySettings() {
-    difficulty = document.getElementById("difficultySelect").value;
-    circleMin = difficultyMap[difficulty].min;
-    circleMax = difficultyMap[difficulty].max;
-
-    displayTime = parseFloat(document.getElementById("displayTimeSelect").value);
-
-    const soundSetting = document.getElementById("soundOnOff").value;
-    soundEnabled = (soundSetting === "on");
   }
 
   /********************************************
@@ -354,40 +256,11 @@
       showResult();
       return;
     }
-    // 画面初期化
     document.getElementById("questionNumber").textContent = currentQuestion;
-    document.getElementById("countdown").textContent = "";
-    document.getElementById("circle-container").innerHTML = '<div id="question-prompt"></div>';
     document.getElementById("feedback").textContent = "";
-    document.getElementById("choice-container").innerHTML = "";
-    document.getElementById("question-prompt").textContent = "";
-    
-    // カウントダウン → 丸表示 → 丸消去 → 選択肢表示
-    showCountdown(() => {
-      showCircles();
-    });
-  }
 
-  /********************************************
-   * カウントダウン (3,2,1)
-  ********************************************/
-  function showCountdown(callback) {
-    const countdownEl = document.getElementById("countdown");
-    let count = 3;
-    countdownEl.textContent = count;
-
-    const timer = setInterval(() => {
-      count--;
-      if (count === 0) {
-        countdownEl.textContent = "Start!";
-      } else if (count < 0) {
-        clearInterval(timer);
-        countdownEl.textContent = "";
-        callback();
-      } else {
-        countdownEl.textContent = count;
-      }
-    }, 800);
+    // 丸を表示→一定時間後に消す
+    showCircles();
   }
 
   /********************************************
@@ -395,83 +268,42 @@
   ********************************************/
   function showCircles() {
     const container = document.getElementById("circle-container");
-    container.innerHTML = '<div id="question-prompt"></div>'; // リセット
-
-    // まず選択肢は非表示にしておく
-    document.getElementById("choice-container").style.display = "none";
+    container.innerHTML = "";
 
     // ランダムな丸の数を決定
-    const count = getRandomInt(circleMin, circleMax);
-    currentCircleCount = count;
-    currentCircleData = []; // 前の問題のデータをリセット
+    const circleCount = getRandomInt(circleMin, circleMax);
 
-    // ランダム配置用のデータを生成してDOMに反映
-    const parentW = container.clientWidth;
-    const parentH = container.clientHeight;
-    const colors = ["#8ec5fc", "#ffafbd", "#ffd3b6", "#ff9a9e", "#f6d365", "#fdffba", "#a1c4fd"];
+    // 「トランプのように整列」か「ランダム配置」かは要件に合わせて下記を切り替え
+    // ここではランダム配置の例を示す
+    for (let i = 0; i < circleCount; i++) {
+      const circle = document.createElement("div");
+      circle.classList.add("circle");
 
-    for (let i = 0; i < count; i++) {
-      const circleObj = {};
-      // サイズ
-      circleObj.size = getRandomInt(40, 70);
-      circleObj.color = colors[Math.floor(Math.random() * colors.length)];
-      circleObj.x = getRandomInt(0, parentW - circleObj.size);
-      circleObj.y = getRandomInt(0, parentH - circleObj.size);
+      // ランダム色
+      const colors = ["#8ec5fc", "#ffafbd", "#ffd3b6", "#ff9a9e", "#f6d365", "#fdffba", "#a1c4fd"];
+      circle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
 
-      // DOM生成
-      const circleDiv = document.createElement("div");
-      circleDiv.classList.add("circle");
-      circleDiv.style.width = circleObj.size + "px";
-      circleDiv.style.height = circleObj.size + "px";
-      circleDiv.style.backgroundColor = circleObj.color;
-      circleDiv.style.left = circleObj.x + "px";
-      circleDiv.style.top = circleObj.y + "px";
+      // 大きさ
+      const size = getRandomInt(40, 70);
+      circle.style.width = size + "px";
+      circle.style.height = size + "px";
 
-      container.appendChild(circleDiv);
-      currentCircleData.push(circleObj);
+      // ランダム位置
+      const maxX = container.clientWidth - size;
+      const maxY = container.clientHeight - size;
+      const posX = getRandomInt(0, maxX);
+      const posY = getRandomInt(0, maxY);
+      circle.style.left = posX + "px";
+      circle.style.top = posY + "px";
+
+      container.appendChild(circle);
     }
 
     // 一定時間後に消し、選択肢を表示
     setTimeout(() => {
-      container.innerHTML = '<div id="question-prompt">いくつあった？</div>';
-      showChoices(count);
-    }, displayTime * 1000);
-  }
-
-  /********************************************
-   * もういちどボタン: 同じ問題を再表示
-  ********************************************/
-  function helpReShowCircles() {
-    // まだ問題が始まっていない場合は無視
-    if (currentCircleData.length === 0 || currentCircleCount === 0) return;
-
-    // いったん選択肢を非表示
-    document.getElementById("choice-container").style.display = "none";
-    document.getElementById("feedback").textContent = "";
-
-    // カウントダウン後、同じ丸を再度表示
-    showCountdown(() => {
-      const container = document.getElementById("circle-container");
       container.innerHTML = "";
-
-      currentCircleData.forEach(data => {
-        const circleDiv = document.createElement("div");
-        circleDiv.classList.add("circle");
-        circleDiv.style.width = data.size + "px";
-        circleDiv.style.height = data.size + "px";
-        circleDiv.style.backgroundColor = data.color;
-        circleDiv.style.left = data.x + "px";
-        circleDiv.style.top = data.y + "px";
-        container.appendChild(circleDiv);
-      });
-
-      // 同じ秒数後に再度消して選択肢表示
-      setTimeout(() => {
-        container.innerHTML = '<div id="question-prompt">いくつあった？</div>';
-        // choices再表示
-        showChoices(currentCircleCount);
-      }, displayTime * 1000);
-    });
+      showChoices(circleCount);
+    }, displayTime * 1000);
   }
 
   /********************************************
@@ -479,7 +311,6 @@
   ********************************************/
   function showChoices(correctAnswer) {
     const choiceContainer = document.getElementById("choice-container");
-    choiceContainer.style.display = "block"; // 表示
     choiceContainer.innerHTML = "";
 
     // 3択(正解 + ランダム2)
@@ -488,7 +319,7 @@
       let btn = document.createElement("button");
       btn.textContent = ans;
       btn.classList.add("choice-button");
-      btn.onclick = () => checkAnswer(ans, correctAnswer, btn);
+      btn.onclick = () => checkAnswer(ans, correctAnswer);
       choiceContainer.appendChild(btn);
     });
   }
@@ -496,7 +327,7 @@
   /********************************************
    * 正解・不正解チェック
   ********************************************/
-  function checkAnswer(selected, correctAnswer, btnElem) {
+  function checkAnswer(selected, correctAnswer) {
     const feedbackEl = document.getElementById("feedback");
 
     if (selected === correctAnswer) {
@@ -504,21 +335,36 @@
       correctCount++;
       playSound(true);
       feedbackEl.textContent = "正解！";
-      btnElem.classList.add("correct-animate");
 
-      // 正解後は次の問題へ進む前にカウントダウン
+      // 正解アニメーション（選択したボタンをスケールアップ）
+      const buttons = document.querySelectorAll(".choice-button");
+      buttons.forEach(btn => {
+        if (Number(btn.textContent) === correctAnswer) {
+          btn.classList.add("correct-animate");
+        }
+      });
+
+      // 少し待ってから次の問題へ
       setTimeout(() => {
         nextQuestion();
-      }, 1200);
+      }, 1000);
 
     } else {
       // 不正解
       playSound(false);
       feedbackEl.textContent = "ちがうよ…もういちど！";
-      btnElem.classList.add("incorrect-animate");
-      setTimeout(() => {
-        btnElem.classList.remove("incorrect-animate");
-      }, 300);
+
+      // 不正解アニメーション（選択したボタンをシェイク）
+      const buttons = document.querySelectorAll(".choice-button");
+      buttons.forEach(btn => {
+        if (btn.textContent == selected) {
+          btn.classList.add("incorrect-animate");
+          // アニメーションが終わったらクラスを外す
+          setTimeout(() => {
+            btn.classList.remove("incorrect-animate");
+          }, 300);
+        }
+      });
     }
   }
 
@@ -539,6 +385,29 @@
     } else {
       subMsgEl.textContent = "つぎもがんばろう！";
     }
+  }
+
+  /********************************************
+   * 設定機能
+  ********************************************/
+  function onDifficultyChange() {
+    // 難易度を選ぶと、デフォルト表示時間を切り替える
+    const newDiff = document.getElementById("difficultySelect").value;
+    const suggestedTime = difficultyMap[newDiff].time;
+    document.getElementById("displayTimeSelect").value = suggestedTime.toString();
+  }
+
+  function applySettings() {
+    difficulty = document.getElementById("difficultySelect").value;
+    circleMin = difficultyMap[difficulty].min;
+    circleMax = difficultyMap[difficulty].max;
+
+    displayTime = parseFloat(document.getElementById("displayTimeSelect").value);
+
+    const soundSetting = document.getElementById("soundOnOff").value;
+    soundEnabled = (soundSetting === "on");
+
+    showScreen("screen-start");
   }
 
   /********************************************
