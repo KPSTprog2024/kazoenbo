@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>かぞえんぼ</title>
+  <style>
+    /********************************************
+     * ベーススタイル
+    ********************************************/
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      background-color: #fefefe;
+      color: #333;
+      text-align: center;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+    h1, h2, h3 {
+      margin: 0.5em 0;
+    }
+    button {
+      font-size: 1.2em;
+      padding: 0.6em 1em;
+      margin: 0.3em;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background-color: #dcdcdc;
+      transition: background-color 0.2s ease;
+    }
+    button:hover {
+      background-color: #ccc;
+    }
+    .big-button {
+      font-size: 1.4em;
+      padding: 0.8em 2em;
+    }
+    /********************************************
+     * 画面レイアウト
+    ********************************************/
+    /* 画面切り替え用の共通スタイル */
+    .screen {
+      display: none;
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 1em;
+    }
+    .active {
+      display: block;
+    }
+    /* メインメニューのコンテナ */
+    .menu-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 80vh;
+    }
+    /* 設定項目 */
+    .setting-item {
+      margin: 1em 0;
+    }
+    label {
+      margin-right: 0.5em;
+    }
+
+    /********************************************
+     * ゲーム画面用
+    ********************************************/
+    #circle-container {
+      position: relative;
+      width: 80%;
+      height: 300px;
+      margin: 1em auto;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      overflow: hidden;
+    }
+    .circle {
+      position: absolute;
+      border-radius: 50%;
+    }
+    .choice-button {
+      display: inline-block;
+      font-size: 1.5em;
+      margin: 0.5em;
+      padding: 0.5em 1em;
+      border: 2px solid #aaa;
+      border-radius: 8px;
+      background-color: #dcdcdc;
+      cursor: pointer;
+    }
+    #feedback {
+      font-size: 1.3em;
+      color: #d33;
+      min-height: 1.5em;
+      margin: 0.5em;
+    }
+
+    /********************************************
+     * アニメーション用クラス
+    ********************************************/
+    /* 正解時: 軽くスケールアップ */
+    .correct-animate {
+      animation: correct-scale 0.4s ease;
+    }
+    @keyframes correct-scale {
+      0%   { transform: scale(1);   background-color: #dcdcdc; }
+      50%  { transform: scale(1.2); background-color: #b3f7b3; }
+      100% { transform: scale(1);   background-color: #dcdcdc; }
+    }
+
+    /* 不正解時: シェイク */
+    .incorrect-animate {
+      animation: shake 0.3s;
+    }
+    @keyframes shake {
+      0%   { transform: translateX(0); }
+      25%  { transform: translateX(-6px); }
+      50%  { transform: translateX(6px); }
+      75%  { transform: translateX(-6px); }
+      100% { transform: translateX(0); }
+    }
+
+  </style>
+</head>
+<body>
+
+<!-- スタート画面 -->
+<div id="screen-start" class="screen active">
+  <div class="menu-container">
+    <h1>かぞえんぼ</h1>
+    <button class="big-button" onclick="startGame()">ゲームスタート</button>
+    <button class="big-button" onclick="showScreen('screen-rule')">ルール説明</button>
+    <button class="big-button" onclick="showScreen('screen-setting')">設定</button>
+  </div>
+</div>
+
+<!-- ルール説明画面 -->
+<div id="screen-rule" class="screen">
+  <h2>ルール説明</h2>
+  <p>画面に表示される丸の数を覚えて、次の画面で正しい数を当てるゲームです。<br>
+    1セット5問で構成され、5問が終わると結果画面が表示されます。<br>
+    表示時間や難易度、サウンドの設定は「設定」画面から変更できます。</p>
+  <button onclick="showScreen('screen-start')">戻る</button>
+</div>
+
+<!-- 設定画面 -->
+<div id="screen-setting" class="screen">
+  <h2>設定</h2>
+
+  <div class="setting-item">
+    <label for="difficultySelect">難易度</label>
+    <select id="difficultySelect" onchange="onDifficultyChange()">
+      <option value="初級">初級 (2～5個・2秒表示)</option>
+      <option value="中級">中級 (5～8個・1秒表示)</option>
+      <option value="上級">上級 (8～10個・0.5秒表示)</option>
+    </select>
+  </div>
+
+  <div class="setting-item">
+    <label for="displayTimeSelect">表示時間</label>
+    <select id="displayTimeSelect">
+      <option value="0.5">0.5秒</option>
+      <option value="1">1秒</option>
+      <option value="2">2秒</option>
+    </select>
+  </div>
+
+  <div class="setting-item">
+    <label for="soundOnOff">サウンド</label>
+    <select id="soundOnOff">
+      <option value="on">ON</option>
+      <option value="off">OFF</option>
+    </select>
+  </div>
+
+  <button onclick="applySettings()">OK</button>
+  <button onclick="showScreen('screen-start')">戻る</button>
+</div>
+
+<!-- ゲーム画面 -->
+<div id="screen-game" class="screen">
+  <h2>問題 <span id="questionNumber">1</span> / 5</h2>
+  <div id="circle-container"></div>
+  <div id="choice-container"></div>
+  <p id="feedback"></p>
+</div>
+
+<!-- 結果画面 -->
+<div id="screen-result" class="screen">
+  <h2>結果発表</h2>
+  <p><span id="resultMessage"></span></p>
+  <p id="resultSubMessage"></p>
+  <button onclick="startGame()">再挑戦</button>
+  <button onclick="showScreen('screen-start')">タイトルへ</button>
+</div>
+
+<script>
+  /********************************************
+   * グローバル変数
+  ********************************************/
+  const TOTAL_QUESTIONS = 5; // 1セットあたりの問題数
+
+  let currentQuestion = 0;   // 現在何問目か（1〜5）
+  let correctCount = 0;      // 正解数
+
+  // 難易度関連
+  let difficulty = "初級";        // 初期値: 初級
+  let circleMin = 2;             // 丸の最小数 (初級:2)
+  let circleMax = 5;             // 丸の最大数 (初級:5)
+  let displayTime = 2.0;         // 初期値: 2秒
+  let soundEnabled = true;       // サウンドON/OFF
+
+  // 難易度別マップ
+  const difficultyMap = {
+    "初級": { min: 2, max: 5, time: 2.0 },
+    "中級": { min: 5, max: 8, time: 1.0 },
+    "上級": { min: 8, max: 10, time: 0.5 }
+  };
+
+  /********************************************
+   * 画面切り替え
+  ********************************************/
+  function showScreen(screenId) {
+    const screens = document.querySelectorAll(".screen");
+    screens.forEach(screen => {
+      screen.classList.remove("active");
+    });
+    document.getElementById(screenId).classList.add("active");
+  }
+
+  /********************************************
+   * ゲーム開始
+  ********************************************/
+  function startGame() {
+    currentQuestion = 0;
+    correctCount = 0;
+    showScreen("screen-game");
+    nextQuestion();
+  }
+
+  /********************************************
+   * 次の問題へ
+  ********************************************/
+  function nextQuestion() {
+    currentQuestion++;
+    if (currentQuestion > TOTAL_QUESTIONS) {
+      // 全5問終了で結果画面へ
+      showResult();
+      return;
+    }
+    document.getElementById("questionNumber").textContent = currentQuestion;
+    document.getElementById("feedback").textContent = "";
+
+    // 丸を表示→一定時間後に消す
+    showCircles();
+  }
+
+  /********************************************
+   * 丸の表示
+  ********************************************/
+  function showCircles() {
+    const container = document.getElementById("circle-container");
+    container.innerHTML = "";
+
+    // ランダムな丸の数を決定
+    const circleCount = getRandomInt(circleMin, circleMax);
+
+    // 「トランプのように整列」か「ランダム配置」かは要件に合わせて下記を切り替え
+    // ここではランダム配置の例を示す
+    for (let i = 0; i < circleCount; i++) {
+      const circle = document.createElement("div");
+      circle.classList.add("circle");
+
+      // ランダム色
+      const colors = ["#8ec5fc", "#ffafbd", "#ffd3b6", "#ff9a9e", "#f6d365", "#fdffba", "#a1c4fd"];
+      circle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+      // 大きさ
+      const size = getRandomInt(40, 70);
+      circle.style.width = size + "px";
+      circle.style.height = size + "px";
+
+      // ランダム位置
+      const maxX = container.clientWidth - size;
+      const maxY = container.clientHeight - size;
+      const posX = getRandomInt(0, maxX);
+      const posY = getRandomInt(0, maxY);
+      circle.style.left = posX + "px";
+      circle.style.top = posY + "px";
+
+      container.appendChild(circle);
+    }
+
+    // 一定時間後に消し、選択肢を表示
+    setTimeout(() => {
+      container.innerHTML = "";
+      showChoices(circleCount);
+    }, displayTime * 1000);
+  }
+
+  /********************************************
+   * 選択肢を表示 (3択)
+  ********************************************/
+  function showChoices(correctAnswer) {
+    const choiceContainer = document.getElementById("choice-container");
+    choiceContainer.innerHTML = "";
+
+    // 3択(正解 + ランダム2)
+    const answers = generateChoices(correctAnswer);
+    answers.forEach(ans => {
+      let btn = document.createElement("button");
+      btn.textContent = ans;
+      btn.classList.add("choice-button");
+      btn.onclick = () => checkAnswer(ans, correctAnswer);
+      choiceContainer.appendChild(btn);
+    });
+  }
+
+  /********************************************
+   * 正解・不正解チェック
+  ********************************************/
+  function checkAnswer(selected, correctAnswer) {
+    const feedbackEl = document.getElementById("feedback");
+
+    if (selected === correctAnswer) {
+      // 正解
+      correctCount++;
+      playSound(true);
+      feedbackEl.textContent = "正解！";
+
+      // 正解アニメーション（選択したボタンをスケールアップ）
+      const buttons = document.querySelectorAll(".choice-button");
+      buttons.forEach(btn => {
+        if (Number(btn.textContent) === correctAnswer) {
+          btn.classList.add("correct-animate");
+        }
+      });
+
+      // 少し待ってから次の問題へ
+      setTimeout(() => {
+        nextQuestion();
+      }, 1000);
+
+    } else {
+      // 不正解
+      playSound(false);
+      feedbackEl.textContent = "ちがうよ…もういちど！";
+
+      // 不正解アニメーション（選択したボタンをシェイク）
+      const buttons = document.querySelectorAll(".choice-button");
+      buttons.forEach(btn => {
+        if (btn.textContent == selected) {
+          btn.classList.add("incorrect-animate");
+          // アニメーションが終わったらクラスを外す
+          setTimeout(() => {
+            btn.classList.remove("incorrect-animate");
+          }, 300);
+        }
+      });
+    }
+  }
+
+  /********************************************
+   * 結果表示
+  ********************************************/
+  function showResult() {
+    showScreen("screen-result");
+    const msgEl = document.getElementById("resultMessage");
+    const subMsgEl = document.getElementById("resultSubMessage");
+
+    msgEl.textContent = `5問中 ${correctCount}問正解！`;
+
+    if (correctCount === 5) {
+      subMsgEl.textContent = "パーフェクト！すごいね！";
+    } else if (correctCount >= 3) {
+      subMsgEl.textContent = "よくできたね！";
+    } else {
+      subMsgEl.textContent = "つぎもがんばろう！";
+    }
+  }
+
+  /********************************************
+   * 設定機能
+  ********************************************/
+  function onDifficultyChange() {
+    // 難易度を選ぶと、デフォルト表示時間を切り替える
+    const newDiff = document.getElementById("difficultySelect").value;
+    const suggestedTime = difficultyMap[newDiff].time;
+    document.getElementById("displayTimeSelect").value = suggestedTime.toString();
+  }
+
+  function applySettings() {
+    difficulty = document.getElementById("difficultySelect").value;
+    circleMin = difficultyMap[difficulty].min;
+    circleMax = difficultyMap[difficulty].max;
+
+    displayTime = parseFloat(document.getElementById("displayTimeSelect").value);
+
+    const soundSetting = document.getElementById("soundOnOff").value;
+    soundEnabled = (soundSetting === "on");
+
+    showScreen("screen-start");
+  }
+
+  /********************************************
+   * サウンド再生
+  ********************************************/
+  function playSound(isCorrect) {
+    if (!soundEnabled) return;
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    if (isCorrect) {
+      osc.frequency.value = 880; // 正解時: 高め
+    } else {
+      osc.frequency.value = 220; // 不正解時: 低め
+    }
+    osc.start();
+
+    setTimeout(() => {
+      osc.stop();
+      audioCtx.close();
+    }, 300);
+  }
+
+  /********************************************
+   * ユーティリティ
+  ********************************************/
+  // min以上max以下のランダム整数
+  function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  // 正解+ランダム2つの3択を生成
+  function generateChoices(correct) {
+    const choices = [correct];
+    // 必ず異なる値を2つ追加
+    while (choices.length < 3) {
+      let rnd = getRandomInt(Math.max(1, circleMin - 2), circleMax + 2);
+      if (!choices.includes(rnd)) {
+        choices.push(rnd);
+      }
+    }
+    // シャッフル
+    for (let i = choices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [choices[i], choices[j]] = [choices[j], choices[i]];
+    }
+    return choices;
+  }
+
+</script>
+</body>
+</html>
