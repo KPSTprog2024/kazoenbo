@@ -520,7 +520,7 @@
   }
 
 /********************************************
- * 正解・不正解チェック
+ * 正解・不正解チェック (差し替え)
  ********************************************/
 function checkAnswer(selected, correctAnswer, btnElem) {
   const feedbackEl = document.getElementById("feedback");
@@ -552,7 +552,7 @@ function checkAnswer(selected, correctAnswer, btnElem) {
 
 /********************************************
  * 正解時に丸をもう一度表示し、
- * 「次の問題へ」ボタンで進む
+ * 「次の問題へ」ボタンは選択肢の下に配置
  ********************************************/
 function reShowCirclesOnCorrect() {
   const container = document.getElementById("circle-container");
@@ -571,16 +571,28 @@ function reShowCirclesOnCorrect() {
     container.appendChild(circleDiv);
   });
 
-  // 「次の問題へ」ボタンを生成
+  // 「次の問題へ」ボタンをコントロールパネル下部（選択肢の下）に表示
+  const controlPanel = document.getElementById("control-panel");
+  // 既にボタンがある場合は削除してから再度追加
+  const existingNextBtn = document.getElementById("nextQuestionBtn");
+  if (existingNextBtn) {
+    controlPanel.removeChild(existingNextBtn);
+  }
+
   const nextBtn = document.createElement("button");
+  nextBtn.id = "nextQuestionBtn";
   nextBtn.textContent = "次の問題へ";
   nextBtn.style.marginTop = "1em";
   nextBtn.onclick = () => {
-    nextQuestion(); // ボタン押下で次の問題へ進む
+    // ボタン押下で次の問題へ進む
+    // ボタンを削除しておかないと重複する可能性があるため
+    controlPanel.removeChild(nextBtn);
+    nextQuestion();
   };
 
-  container.appendChild(nextBtn);
+  controlPanel.appendChild(nextBtn);
 }
+
 
 
   /********************************************
