@@ -519,62 +519,69 @@
     });
   }
 
-  /********************************************
-   * 正解・不正解チェック
-   ********************************************/
-  function checkAnswer(selected, correctAnswer, btnElem) {
-    const feedbackEl = document.getElementById("feedback");
-    if (selected === correctAnswer) {
-      // 正解
-      playSound(true);
-      feedbackEl.textContent = "正解！";
+/********************************************
+ * 正解・不正解チェック
+ ********************************************/
+function checkAnswer(selected, correctAnswer, btnElem) {
+  const feedbackEl = document.getElementById("feedback");
+  if (selected === correctAnswer) {
+    // 正解
+    playSound(true);
+    feedbackEl.textContent = "正解！";
 
-      // この問題で一度も間違えてなければ正解数を加算
-      if (!questionMissed) {
-        correctCount++;
-      }
-
-      btnElem.classList.add("correct-animate");
-
-      // 正解時に丸を再表示 → 表示後に次の問題へ
-      reShowCirclesOnCorrect();
-    } else {
-      // 不正解
-      playSound(false);
-      feedbackEl.textContent = "ちがうよ…もういちど！";
-      btnElem.classList.add("incorrect-animate");
-      questionMissed = true; // この問題はもうパーフェクト扱いしない
-      setTimeout(() => {
-        btnElem.classList.remove("incorrect-animate");
-      }, 300);
+    // この問題で一度も間違えてなければ正解数を加算
+    if (!questionMissed) {
+      correctCount++;
     }
-  }
 
-  /********************************************
-   * 正解時に丸をもう一度表示
-  ********************************************/
-  function reShowCirclesOnCorrect() {
-    const container = document.getElementById("circle-container");
-    // いったんクリア
-    container.innerHTML = "";
+    btnElem.classList.add("correct-animate");
 
-    // 同じ丸を再度表示
-    currentCircleData.forEach(data => {
-      const circleDiv = document.createElement("div");
-      circleDiv.classList.add("circle");
-      circleDiv.style.width = data.size + "px";
-      circleDiv.style.height = data.size + "px";
-      circleDiv.style.backgroundColor = data.color;
-      circleDiv.style.left = data.x + "px";
-      circleDiv.style.top = data.y + "px";
-      container.appendChild(circleDiv);
-    });
-
-    // 一定時間後に次の問題へ
+    // 正解時に丸を再表示 → ユーザーがボタンを押すまで待機
+    reShowCirclesOnCorrect();
+  } else {
+    // 不正解
+    playSound(false);
+    feedbackEl.textContent = "ちがうよ…もういちど！";
+    btnElem.classList.add("incorrect-animate");
+    questionMissed = true; // この問題はもうパーフェクト扱いしない
     setTimeout(() => {
-      nextQuestion();
-    }, displayTime * 1000);
+      btnElem.classList.remove("incorrect-animate");
+    }, 300);
   }
+}
+
+/********************************************
+ * 正解時に丸をもう一度表示し、
+ * 「次の問題へ」ボタンで進む
+ ********************************************/
+function reShowCirclesOnCorrect() {
+  const container = document.getElementById("circle-container");
+  // いったんクリア
+  container.innerHTML = "";
+
+  // 同じ丸を再度表示
+  currentCircleData.forEach(data => {
+    const circleDiv = document.createElement("div");
+    circleDiv.classList.add("circle");
+    circleDiv.style.width = data.size + "px";
+    circleDiv.style.height = data.size + "px";
+    circleDiv.style.backgroundColor = data.color;
+    circleDiv.style.left = data.x + "px";
+    circleDiv.style.top = data.y + "px";
+    container.appendChild(circleDiv);
+  });
+
+  // 「次の問題へ」ボタンを生成
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "次の問題へ";
+  nextBtn.style.marginTop = "1em";
+  nextBtn.onclick = () => {
+    nextQuestion(); // ボタン押下で次の問題へ進む
+  };
+
+  container.appendChild(nextBtn);
+}
+
 
   /********************************************
    * 結果表示
